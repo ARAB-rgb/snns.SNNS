@@ -1,0 +1,56 @@
+name: Deploy snns.pro to Hostinger
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy Application
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: 2. Setup Node.js runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 3. Install dependencies cleanly
+        run: npm ci
+
+      - name: 4. Build Vite React app for Production
+        env:
+          VITE_APP_NAME: "snns.pro"
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+          VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
+          VITE_ZEGO_APP_ID: ${{ secrets.VITE_ZEGO_APP_ID }}
+          VITE_ZEGO_APP_SIGN: ${{ secrets.VITE_ZEGO_APP_SIGN }}
+        run: npm run build
+
+      - name: 5. Verify Build Artifacts
+        run: |
+          ls -la dist
+          test -f dist/index.html
+          test -f dist/.htaccess
+
+      - name: 6. Deploy to Hostinger via FTP (if secrets configured)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        if: ${{ secrets.FTP_SERVER != '' }}
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./dist/
+          server-dir: /public_html/

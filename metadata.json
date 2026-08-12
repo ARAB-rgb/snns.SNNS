@@ -1,0 +1,6 @@
+{
+  "name": "SNNS.PRO",
+  "description": "تطبيق SNNS.PRO للمحادثات الخاصة والمكالمات الصوتية والمرئية والحالات بتصميم احترافي ومتجاوب.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
